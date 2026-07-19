@@ -16,9 +16,8 @@ async function loadData() {
         0,
         Math.floor(diff / (1000 * 60 * 60 * 24))
     );
-
-    document.getElementById("days").textContent =
-        `${days} päev`;
+    const sona = days === 1 ? "päev" : "päeva";
+    document.getElementById("days").textContent = `${days} ${sona}`;
 }
 
 loadData();
