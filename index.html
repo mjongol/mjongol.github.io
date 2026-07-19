@@ -4,28 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mitu matchat veel?</title>
-
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
 <div class="container">
-
     <div class="emoji">🍵</div>
-
     <h1>Mitu matchat veel?</h1>
-
-    <div id="counter">–</div>
+    <div id="counter">100</div> <!-- Alustame 100-st -->
 
     <div class="divider"></div>
 
     <h2>Viimasest matchast möödas</h2>
-
     <div id="days">–</div>
 
+    <div class="divider"></div>
+
+    <!-- MATCHA VORM -->
+    <div class="log-form">
+        <h3>Jõin just matcha!</h3>
+        
+        <label for="rating">Hinnang:</label>
+        <select id="rating">
+            <option value="" disabled selected>Vali hinnang...</option>
+            <option value="10">10/10</option>
+            <option value="9">9/10</option>
+            <option value="8">8/10</option>
+            <option value="7">7/10</option>
+            <option value="6">6/10</option>
+            <option value="5">5/10</option>
+            <option value="4">4/10</option>
+            <option value="3">3/10</option>
+            <option value="2">2/10</option>
+            <option value="1">1/10</option>
+        </select>
+
+        <label for="comment">Kommentaar:</label>
+        <input type="text" id="comment" placeholder="kust ostetud? midagi erilist?">
+
+	<button id="matcha-btn" class="btn" disabled>Joodud</button>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- KOMPAKTNE AJALUGU -->
+    <h2>Eelmised matchad</h2>
+    <div class="table-wrapper">
+        <table class="matcha-table">
+            <thead>
+                <tr>
+                    <th>Nr</th>
+                    <th>Kuupäev</th>
+                    <th>Hinnang</th>
+                    <th>Kommentaar</th>
+                </tr>
+            </thead>
+            <tbody id="history-list">
+                <!-- JavaScript paneb read siia -->
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script src="script.js"></script>
-
 </body>
 </html>
