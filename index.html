@@ -68,6 +68,124 @@
     </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+(function () {
+    const SUPABASE_URL = "https://jxwhiavqnzqvhelimewo.supabase.co/rest/v1/";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4d2hpYXZxbnpxdmhlbGltZXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODc5OTEsImV4cCI6MjEwMDA2Mzk5MX0.bQ2iaF8CSx-en-8AsL_Tl1xB5u1r2njiXQrSMySxPzQ";
+
+    const ratingInput = document.getElementById("rating");
+    const commentInput = document.getElementById("comment");
+    const submitBtn = document.getElementById("matcha-btn");
+
+    function updateButtonState() {
+        if (!ratingInput || !commentInput || !submitBtn) return;
+        const isReady = ratingInput.value !== "" && commentInput.value.trim().length > 0;
+        submitBtn.disabled = !isReady;
+    }
+
+    async function loadData() {
+        const response = await fetch(`${SUPABASE_URL}matcha_stats?select=*`, {
+            method: "GET",
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+        });
+
+        let logs;
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Viga laadimisel:", response.status, errorText);
+            return;
+        }
+
+        try {
+            logs = await response.json();
+        } catch (error) {
+            console.error("Viga andmete töötlemisel:", error);
+            return;
+        }
+        const totalLogged = logs ? logs.length : 0;
+        document.getElementById("counter").textContent = Math.max(0, 100 - totalLogged);
+
+        if (totalLogged === 0) {
+            document.getElementById("days").textContent = "Andmed puuduvad";
+            return;
+        }
+
+        const latestLog = logs[logs.length - 1];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const last = new Date(latestLog.created_at);
+        last.setHours(0, 0, 0, 0);
+
+        const diff = today.getTime() - last.getTime();
+        const days = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+        const sona = days === 1 ? "päev" : "päeva";
+        document.getElementById("days").textContent = `${days} ${sona}`;
+
+        const historyContainer = document.getElementById("history-list");
+        historyContainer.innerHTML = "";
+
+        const displayLogs = [...logs].reverse();
+        displayLogs.forEach((log, index) => {
+            const matchaNr = logs.length - index;
+            const date = new Date(log.created_at).toLocaleDateString('et-EE', {
+                day: '2-digit',
+                month: '2-digit'
+            });
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><strong>#${matchaNr}</strong></td>
+                <td class="text-muted">${date}</td>
+                <td><span class="badge">${log.rating}/10</span></td>
+                <td class="comment-cell">${log.comment}</td>
+            `;
+            historyContainer.appendChild(row);
+        });
+    }
+
+    async function submitMatcha() {
+        const ratingVal = parseInt(ratingInput.value, 10);
+        const commentVal = commentInput.value.trim();
+
+        const response = await fetch(`${SUPABASE_URL}matcha_stats`, {
+            method: "POST",
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`,
+                "Content-Type": "application/json",
+                "Prefer": "return=representation"
+            },
+            body: JSON.stringify([{ rating: ratingVal, comment: commentVal }])
+        });
+
+        let responseBody = null;
+        if (!response.ok) {
+            responseBody = await response.text();
+            console.error("Viga salvestamisel:", response.status, responseBody);
+            alert("Midagi läks valesti!");
+            return;
+        }
+
+        ratingInput.value = "";
+        commentInput.value = "";
+        updateButtonState();
+        loadData();
+    }
+
+    if (ratingInput && commentInput && submitBtn) {
+        ratingInput.onchange = updateButtonState;
+        ratingInput.oninput = updateButtonState;
+        commentInput.oninput = updateButtonState;
+        commentInput.onkeyup = updateButtonState;
+        commentInput.onchange = updateButtonState;
+        submitBtn.onclick = submitMatcha;
+        updateButtonState();
+        loadData();
+    }
+})();
+</script>
 </body>
 </html>
