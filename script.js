@@ -1,26 +1,42 @@
 const SUPABASE_URL = "https://jxwhiavqnzqvhelimewo.supabase.co/rest/v1/";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4d2hpYXZxbnpxdmhlbGltZXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODc5OTEsImV4cCI6MjEwMDA2Mzk5MX0.bQ2iaF8CSx-en-8AsL_Tl1xB5u1r2njiXQrSMySxPzQ";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+let supabase = null;
 const ratingInput = document.getElementById("rating");
 const commentInput = document.getElementById("comment");
 const submitBtn = document.getElementById("matcha-btn");
 
-// KONTROLL: Kas mõlemad väljad on täidetud?
-function checkInputs() {
-    const isRatingSelected = ratingInput.value !== "";
-    const isCommentFilled = commentInput.value.trim() !== "";
+function updateButtonState() {
+    if (!ratingInput || !commentInput || !submitBtn) return;
 
-    if (isRatingSelected && isCommentFilled) {
-        submitBtn.removeAttribute("disabled");
-    } else {
-        submitBtn.setAttribute("disabled", "true");
-    }
+    const isReady = ratingInput.value !== "" && commentInput.value.trim().length > 0;
+    submitBtn.disabled = !isReady;
 }
 
-// Paneme väljad sisestust kuulama
-ratingInput.addEventListener("change", checkInputs);
-commentInput.addEventListener("input", checkInputs);
+window.updateButtonState = updateButtonState;
+window.checkInputs = updateButtonState;
+
+function initApp() {
+    if (!ratingInput || !commentInput || !submitBtn) return;
+
+    ratingInput.addEventListener("change", updateButtonState);
+    ratingInput.addEventListener("input", updateButtonState);
+    commentInput.addEventListener("input", updateButtonState);
+    commentInput.addEventListener("keyup", updateButtonState);
+    commentInput.addEventListener("change", updateButtonState);
+
+    updateButtonState();
+
+    if (window.supabase?.createClient) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        submitBtn.addEventListener("click", joinMatcha);
+        loadData();
+    } else {
+        submitBtn.addEventListener("click", () => {
+            alert("Andmebaasi ühendus pole saadaval. Proovi hiljem.");
+        });
+    }
+}
 
 async function loadData() {
     // Küsime andmed (vanemad eespool, et tabeli järjekorranumber klapiks)
@@ -114,5 +130,8 @@ async function joinMatcha() {
     }
 }
 
-submitBtn.addEventListener("click", joinMatcha);
-loadData();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initApp);
+} else {
+    initApp();
+}
