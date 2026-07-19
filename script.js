@@ -18,7 +18,7 @@ async function loadData() {
     );
 
     document.getElementById("days").textContent =
-        `${days} päeva`;
+        `${days} päev`;
 }
 
 loadData();
